@@ -1,4 +1,6 @@
 import pygame
+import output_win
+import sys
 
 LINE_COL = "black"
 BACKGROUND_COL = "white"
@@ -40,9 +42,18 @@ def draw_cross(surface, pos):
     pygame.draw.line(surface, POLE_COL, (pos[0] - CROSS_SIZE / 2, pos[1] + CROSS_SIZE / 2),
                      (pos[0] + CROSS_SIZE / 2, pos[1] - CROSS_SIZE / 2))
 
+def write_poles(poles):
+    with open("poles.txt", "w") as pole_file:
+        poles_str = ""
+        for pole in poles:
+            poles_str += str(pole[0]) + "," + str(pole[1]) + " "
+        pole_file.write(poles_str)
+
 def main():
     poles = [(0, 0)]
     n_poles = 0
+
+    output_win.thread.start()
 
     run = True
 
@@ -54,11 +65,14 @@ def main():
             if event.type == pygame.MOUSEMOTION:
                 # Update the graph to show the new position of the pole
                 poles[n_poles] = screen_to_coord(pygame.mouse.get_pos())
+                # Write response to file
+                write_poles(poles)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # Add the current mouse position to poles
                 poles.append(screen_to_coord(pygame.mouse.get_pos()))
-                n_poles += 1
+                # Write response to file
+                write_poles(poles)
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
@@ -99,7 +113,12 @@ def main():
 
         clock.tick(30)
 
+    with open("poles.txt", "w") as pole_file:
+        pole_file.write("")
     pygame.quit()
+    output_win.thread.terminate()
+    output_win.thread.close()
+    sys.exit()
 
 if __name__ == "__main__":
     main()
